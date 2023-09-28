@@ -1,11 +1,20 @@
 <?php
 function task_menu() {
+	
 	$menuitems['api'] = array(
 		'page callback' => 'demo_api',
 		'access callback' => TRUE,
 		'delivery callback' => 'drupal_json_output',
     );
-	    return $menuitems;
+	
+	$menuitems['admin/config/system/fizzbuzz'] = array(
+		'title'            => 'FizzBuzz Custom Form',
+		'page callback'    => 'drupal_get_form',
+		'page arguments'   => ['fizzbuzz_form'],
+		'access callback' => 'check_user_has_role',
+	);
+	
+	return $menuitems;
 }
 
 function demo_api() {
@@ -13,8 +22,62 @@ function demo_api() {
 		$site_name = variable_get('site_name', '');
 		$site_slogan = variable_get('site_slogan', '');
 		$data = [$site_name, $site_slogan, $site_email];
-		
-		
 		return $data;
 
+}
+function check_user_has_role() {
+	   global $user;
+	   if (in_array('administrator', $user->roles)) {
+		 return TRUE;
+	   }
+	   return FALSE;
+}
+function fizzbuzz_form($form, &$form_state) {
+
+		$form['min_value'] = [
+			'#title'         => 'Min Value',
+			'#type'          => 'textfield',
+			'#attributes' => array(
+					' type' => 'number',
+			),
+			'#size'          => 10,
+			'#required'      => TRUE,
+			'#number_type'   => 'decimal',
+			'#default_value' => variable_get('min_value'),
+		];
+		
+		$form['max_value'] = [
+			'#title'         => 'Max Value',
+			'#type'          => 'textfield',
+			'#attributes' => array(
+					' type' => 'number',
+			),
+			'#size'          => 10,
+			'#required'      => TRUE,
+			'#default_value' => variable_get('max_value'),
+		];
+		
+		
+		$form['submit_button'] = array(
+			'#type' => 'submit',
+			'#value' => t('Submit Here!'),
+		);
+
+       return $form;
+}
+function fizzbuzz_form_validate($form, &$form_state) {
+  $min_value = $form_state['values']['min_value'];
+  $max_value = $form_state['values']['max_value'];
+    if (strlen($min_value) < 3) {
+        form_set_error('min_value', t("Min field should be min 3 values"));
+    }
+	if (strlen($max_value) > 5 ) {
+        form_set_error('max_value', t("Max field should not be more then 5 values"));
+    }
+}
+
+function fizzbuzz_form_submit($form, &$form_state) {
+		$min_value = $form_state['values']['min_value'];
+		$max_value = $form_state['values']['max_value'];
+		drupal_set_message(t(' You have successfully submitted the form!'));
 }
