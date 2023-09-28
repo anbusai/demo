@@ -1,0 +1,20 @@
+<?php
+function task_menu() {
+	$menuitems['api'] = array(
+		'page callback' => 'demo_api',
+		'access callback' => TRUE,
+		'delivery callback' => 'drupal_json_output',
+    );
+	    return $menuitems;
+}
+
+function demo_api() {
+		$site_email = variable_get('site_mail', '');
+		$site_name = variable_get('site_name', '');
+		$site_slogan = variable_get('site_slogan', '');
+		$data = [$site_name, $site_slogan, $site_email];
+		
+		
+		return $data;
+
+}
