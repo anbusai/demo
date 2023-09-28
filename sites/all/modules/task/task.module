@@ -77,7 +77,5 @@ function fizzbuzz_form_validate($form, &$form_state) {
 }
 
 function fizzbuzz_form_submit($form, &$form_state) {
-		$min_value = $form_state['values']['min_value'];
-		$max_value = $form_state['values']['max_value'];
 		drupal_set_message(t(' You have successfully submitted the form!'));
 }
