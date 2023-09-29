@@ -1,0 +1,5 @@
+
+name = task
+description = This custom module for task.
+core = 7.x
+package = Custom
