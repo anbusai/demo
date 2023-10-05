@@ -41,6 +41,7 @@ function fizzbuzz_form($form, &$form_state) {
 					' type' => 'number',
 			),
 			'#size'          => 10,
+			'#maxlength'	=> 8,
 			'#required'      => TRUE,
 			'#number_type'   => 'decimal',
 			'#default_value' => variable_get('min_value'),
@@ -53,10 +54,10 @@ function fizzbuzz_form($form, &$form_state) {
 					' type' => 'number',
 			),
 			'#size'          => 10,
+			'#maxlength'	=> 8,
 			'#required'      => TRUE,
 			'#default_value' => variable_get('max_value'),
 		];
-		
 		
 		$form['submit_button'] = array(
 			'#type' => 'submit',
@@ -66,14 +67,13 @@ function fizzbuzz_form($form, &$form_state) {
        return $form;
 }
 function fizzbuzz_form_validate($form, &$form_state) {
-  $min_value = $form_state['values']['min_value'];
-  $max_value = $form_state['values']['max_value'];
-    if (strlen($min_value) < 3) {
-        form_set_error('min_value', t("Min field should be min 3 values"));
-    }
-	if (strlen($max_value) > 5 ) {
-        form_set_error('max_value', t("Max field should not be more then 5 values"));
-    }
+	  $min_value = $form_state['values']['min_value'];
+	  $max_value = $form_state['values']['max_value'];
+	  $field_one = str_split($min_value);
+	  $field_two = str_split($max_value);
+	  form_set_error('min_value', t("Filed One Min ".min($field_one)." Fizz Buzz and Max ".max($field_one)." Buzz  <br />Filed Two Min ".min($field_two)." Fizz Buzz and Max ".max($field_two)." Buzz" ));
+	  return false;
+ 
 }
 
 function fizzbuzz_form_submit($form, &$form_state) {
