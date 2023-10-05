@@ -1,81 +1,99 @@
 <?php
-function task_menu() {
-	
-	$menuitems['api'] = array(
-		'page callback' => 'demo_api',
-		'access callback' => TRUE,
-		'delivery callback' => 'drupal_json_output',
+
+  function task_menu() {
+    $menuitems['api'] = array(
+      'page callback' => 'demo_api',
+      'access callback' => TRUE,
+      'delivery callback' => 'drupal_json_output',
     );
-	
-	$menuitems['admin/config/system/fizzbuzz'] = array(
-		'title'            => 'FizzBuzz Custom Form',
-		'page callback'    => 'drupal_get_form',
-		'page arguments'   => ['fizzbuzz_form'],
-		'access callback' => 'check_user_has_role',
-	);
-	
-	return $menuitems;
-}
 
-function demo_api() {
-		$site_email = variable_get('site_mail', '');
-		$site_name = variable_get('site_name', '');
-		$site_slogan = variable_get('site_slogan', '');
-		$data = [$site_name, $site_slogan, $site_email];
-		return $data;
+    $menuitems['admin/config/system/fizzbuzz'] = array(
+      'title'            => 'FizzBuzz Custom Form',
+      'page callback'    => 'drupal_get_form',
+      'page arguments'   => ['fizzbuzz_form'],
+      'access callback' => 'check_user_has_role',
+    );
 
-}
-function check_user_has_role() {
-	   global $user;
-	   if (in_array('administrator', $user->roles)) {
-		 return TRUE;
-	   }
-	   return FALSE;
-}
-function fizzbuzz_form($form, &$form_state) {
+    return $menuitems;
+  }
 
-		$form['min_value'] = [
-			'#title'         => 'Min Value',
-			'#type'          => 'textfield',
-			'#attributes' => array(
-					' type' => 'number',
-			),
-			'#size'          => 10,
-			'#maxlength'	=> 8,
-			'#required'      => TRUE,
-			'#number_type'   => 'decimal',
-			'#default_value' => variable_get('min_value'),
-		];
-		
-		$form['max_value'] = [
-			'#title'         => 'Max Value',
-			'#type'          => 'textfield',
-			'#attributes' => array(
-					' type' => 'number',
-			),
-			'#size'          => 10,
-			'#maxlength'	=> 8,
-			'#required'      => TRUE,
-			'#default_value' => variable_get('max_value'),
-		];
-		
-		$form['submit_button'] = array(
-			'#type' => 'submit',
-			'#value' => t('Submit Here!'),
-		);
+  function demo_api() {
+    $site_email = variable_get('site_mail', '');
+    $site_name = variable_get('site_name', '');
+    $site_slogan = variable_get('site_slogan', '');
+    $data = [$site_name, $site_slogan, $site_email];
+    return $data;
 
-       return $form;
-}
-function fizzbuzz_form_validate($form, &$form_state) {
-	  $min_value = $form_state['values']['min_value'];
-	  $max_value = $form_state['values']['max_value'];
-	  $field_one = str_split($min_value);
-	  $field_two = str_split($max_value);
-	  form_set_error('min_value', t("Filed One Min ".min($field_one)." Fizz Buzz and Max ".max($field_one)." Buzz  <br />Filed Two Min ".min($field_two)." Fizz Buzz and Max ".max($field_two)." Buzz" ));
-	  return false;
- 
-}
+  }
 
-function fizzbuzz_form_submit($form, &$form_state) {
-		drupal_set_message(t(' You have successfully submitted the form!'));
-}
+  function check_user_has_role() {
+    global $user;
+    if (in_array('administrator', $user->roles)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  function fizzbuzz_form($form, &$form_state) {
+    $form['min_value'] = [
+      '#title'         => 'Min Value',
+      '#type'          => 'textfield',
+      '#attributes' => array(
+        ' type' => 'number',
+      ),
+      '#size'          => 10,
+      '#required'      => TRUE,
+      '#number_type'   => 'integer',
+      '#default_value' => variable_get('min_value'),
+    ];
+
+    $form['max_value'] = [
+      '#title'         => 'Max Value',
+      '#type'          => 'textfield',
+      '#attributes' => array(
+        ' type' => 'number',
+      ),
+      '#size'          => 10,
+      '#required'      => TRUE,
+      '#number_type'   => 'integer',
+      '#default_value' => variable_get('max_value'),
+    ];
+
+    $form['submit_button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Submit Here!'),
+    );
+
+    return $form;
+  }
+
+  function fizzbuzz_form_validate($form, &$form_state) {
+    $min_value = $form_state['values']['min_value'];
+    $max_value = $form_state['values']['max_value'];
+
+    //make sure values are numbers
+    if (!is_numeric($min_value) || !is_numeric($max_value)) {
+      form_set_error('', t("Min and Max values needs to be numeric"));
+    } else {
+      //make sure min value is not larger than the max value
+      if ($min_value > $max_value) {
+        form_set_error('min_value', t("Min value needs to be smaller than the Max value"));
+      }
+    }
+  }
+
+  function fizzbuzz_form_submit($form, &$form_state) {
+    $results = array_map(function($number) {
+      if(fizzbuzz_isdivisible($number, 15)) return 'FizzBuzz';
+      if(fizzbuzz_isdivisible($number, 3)) return 'Fizz';
+      if(fizzbuzz_isdivisible($number, 5)) return 'Buzz';
+      return $number;
+    }, range($form_state['values']['min_value'],$form_state['values']['max_value']));
+
+    drupal_set_message(t('You have successfully submitted the form!:<br> FizzBuzz:!result',['!result' => json_encode(array_values($results))]));
+  }
+
+  function fizzbuzz_isdivisible($num, $by) {
+    return $num % $by === 0;
+  }
+
